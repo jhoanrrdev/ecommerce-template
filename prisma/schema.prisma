@@ -1,0 +1,90 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String    @unique
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  products  Product[]
+}
+
+model Product {
+  id          Int         @id @default(autoincrement())
+  name        String
+  slug        String      @unique
+  description String?     @db.Text
+  price       Float
+  promoPrice  Float?
+  stock       Int         @default(0)
+  sku         String?     @unique
+  imageUrl    String?
+  active      Boolean     @default(true)
+  featured    Boolean     @default(false)
+  categoryId  Int?
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+}
+
+model Promotion {
+  id        Int       @id @default(autoincrement())
+  title     String
+  type      String
+  value     Float
+  active    Boolean   @default(true)
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  customerName  String
+  customerPhone String
+  customerEmail String?
+  total         Float
+  status        String      @default("pendiente")
+  notes         String?     @db.Text
+  createdAt     DateTime    @default(now())
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Float
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Setting {
+  id             Int     @id @default(autoincrement())
+  storeName      String
+  logoUrl        String?
+  faviconUrl     String?
+  whatsapp       String?
+  address        String?
+  primaryColor   String?
+  secondaryColor String?
+  bannerUrl      String?
+}

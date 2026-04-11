@@ -1,0 +1,66 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function GET() {
+  try {
+    const settings = await prisma.setting.findFirst({
+      orderBy: {
+        id: "asc",
+      },
+    });
+
+    return NextResponse.json(settings);
+  } catch (error) {
+    console.error("Error al obtener configuracion:", error);
+    return NextResponse.json(
+      { error: "No se pudo obtener la configuracion" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const current = await prisma.setting.findFirst({
+      orderBy: {
+        id: "asc",
+      },
+    });
+
+    const data = {
+      storeName: String(body.storeName || "").trim(),
+      logoUrl: body.logoUrl ? String(body.logoUrl).trim() : null,
+      faviconUrl: body.faviconUrl ? String(body.faviconUrl).trim() : null,
+      whatsapp: body.whatsapp ? String(body.whatsapp).trim() : null,
+      address: body.address ? String(body.address).trim() : null,
+      primaryColor: body.primaryColor ? String(body.primaryColor).trim() : null,
+      secondaryColor: body.secondaryColor ? String(body.secondaryColor).trim() : null,
+      bannerUrl: body.bannerUrl ? String(body.bannerUrl).trim() : null,
+    };
+
+    if (!data.storeName) {
+      return NextResponse.json(
+        { error: "El nombre de la tienda es obligatorio" },
+        { status: 400 }
+      );
+    }
+
+    const settings = current
+      ? await prisma.setting.update({
+          where: { id: current.id },
+          data,
+        })
+      : await prisma.setting.create({
+          data,
+        });
+
+    return NextResponse.json(settings);
+  } catch (error) {
+    console.error("Error al guardar configuracion:", error);
+    return NextResponse.json(
+      { error: "No se pudo guardar la configuracion" },
+      { status: 500 }
+    );
+  }
+}
