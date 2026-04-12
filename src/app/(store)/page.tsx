@@ -1,5 +1,6 @@
 import { StorefrontContent } from "@/components/store/StorefrontContent";
 
+export const dynamic = "force-dynamic";
 export default async function HomePage({
   searchParams,
 }: {
