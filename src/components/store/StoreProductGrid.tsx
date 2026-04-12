@@ -1,10 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { MouseEvent, useEffect, useState } from "react";
+import { useCart } from "@/components/store/CartProvider";
+import { formatCurrency } from "@/lib/utils";
 
 type StoreProduct = {
   id: number;
   name: string;
+  slug: string;
   description: string | null;
   imageUrl: string | null;
   price: number;
@@ -17,6 +21,7 @@ type StoreProductGridProps = {
 };
 
 export function StoreProductGrid({ products }: StoreProductGridProps) {
+  const { addItem } = useCart();
   const [activeImage, setActiveImage] = useState<StoreProduct | null>(null);
   const [hoveredImageId, setHoveredImageId] = useState<number | null>(null);
   const [zoomPosition, setZoomPosition] = useState<Record<number, { x: number; y: number }>>({});
@@ -71,8 +76,18 @@ export function StoreProductGrid({ products }: StoreProductGridProps) {
               className="relative mb-6 block w-full rounded-[1.75rem] bg-gradient-to-br from-slate-100 via-white to-slate-200 p-3 text-left shadow-inner"
             >
               <div className="absolute left-6 top-6 z-10 rounded-full bg-slate-900/85 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
-                Producto destacado
+                {product.promoPrice ? "Oferta activa" : "Producto destacado"}
               </div>
+
+              {product.promoPrice ? (
+                <div className="absolute right-6 top-6 z-10 rounded-full bg-amber-300 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-slate-950 shadow-sm">
+                  -
+                  {Math.round(
+                    ((product.price - product.promoPrice) / product.price) * 100
+                  )}
+                  %
+                </div>
+              ) : null}
 
               <div className="absolute bottom-6 left-6 z-10 rounded-full bg-white/88 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-900 shadow-sm backdrop-blur-sm">
                 Pasa el cursor para ampliar
@@ -120,7 +135,9 @@ export function StoreProductGrid({ products }: StoreProductGridProps) {
             </button>
 
             <h2 className="text-2xl font-semibold text-slate-900">
-              {product.name}
+              <Link href={`/producto/${product.slug}`} className="transition hover:text-brand-accent">
+                {product.name}
+              </Link>
             </h2>
 
             <p className="mt-3 line-clamp-3 text-base text-slate-600">
@@ -132,15 +149,15 @@ export function StoreProductGrid({ products }: StoreProductGridProps) {
                 {product.promoPrice ? (
                   <div className="space-y-1">
                     <p className="text-base text-slate-400 line-through">
-                      ${product.price.toLocaleString("es-CO")}
+                      {formatCurrency(product.price)}
                     </p>
                     <p className="text-3xl font-bold text-slate-900">
-                      ${product.promoPrice.toLocaleString("es-CO")}
+                      {formatCurrency(product.promoPrice)}
                     </p>
                   </div>
                 ) : (
                   <p className="text-3xl font-bold text-slate-900">
-                    ${product.price.toLocaleString("es-CO")}
+                    {formatCurrency(product.price)}
                   </p>
                 )}
               </div>
@@ -148,6 +165,31 @@ export function StoreProductGrid({ products }: StoreProductGridProps) {
               <span className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
                 Stock: {product.stock}
               </span>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  addItem({
+                    id: product.id,
+                    name: product.name,
+                    slug: product.slug,
+                    price: product.price,
+                    promoPrice: product.promoPrice,
+                    imageUrl: product.imageUrl,
+                  })
+                }
+                className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white"
+              >
+                Agregar al carrito
+              </button>
+              <Link
+                href={`/producto/${product.slug}`}
+                className="rounded-xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700"
+              >
+                Ver detalle
+              </Link>
             </div>
           </article>
         ))}

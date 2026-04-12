@@ -1,6 +1,6 @@
 import { StorefrontContent } from "@/components/store/StorefrontContent";
 
-export default async function HomePage({
+export default async function CatalogPage({
   searchParams,
 }: {
   searchParams?: Promise<{
@@ -10,5 +10,5 @@ export default async function HomePage({
     promo?: string;
   }>;
 }) {
-  return <StorefrontContent searchParams={searchParams} mode="home" />;
+  return <StorefrontContent searchParams={searchParams} mode="catalog" />;
 }
