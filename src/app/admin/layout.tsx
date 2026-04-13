@@ -1,7 +1,15 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton";
 import { prisma } from "@/lib/prisma";
+import { headers } from "next/headers";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = (await headers()).get("x-admin-pathname") || "";
+
+  if (pathname.startsWith("/admin/login")) {
+    return children;
+  }
+
   const settings = await prisma.setting.findFirst({
     orderBy: {
       id: "asc",
@@ -49,6 +57,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                     <span className="text-sm font-medium text-slate-500">Sin logo</span>
                   )}
                 </div>
+                <AdminLogoutButton />
               </div>
             </div>
           </div>
