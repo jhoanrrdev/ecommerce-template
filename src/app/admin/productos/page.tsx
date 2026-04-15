@@ -4,14 +4,28 @@ import { ProductAdminTable } from "@/components/admin/ProductAdminTable";
 
 export const dynamic = "force-dynamic";
 export default async function ProductosAdminPage() {
-  const products = await prisma.product.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-    include: {
-      category: true,
-    },
-  });
+  const [products, categories] = await Promise.all([
+    prisma.product.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        category: true,
+      },
+    }),
+    prisma.category.findMany({
+      where: {
+        active: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    }),
+  ]);
 
   return (
     <section className="space-y-6">
@@ -36,7 +50,7 @@ export default async function ProductosAdminPage() {
           <p className="text-slate-600">Todavia no hay productos cargados.</p>
         </div>
       ) : (
-        <ProductAdminTable products={products} />
+        <ProductAdminTable products={products} categories={categories} />
       )}
     </section>
   );

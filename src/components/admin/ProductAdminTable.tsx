@@ -13,18 +13,29 @@ type ProductRow = {
   price: number;
   promoPrice: number | null;
   stock: number;
+  categoryId: number | null;
   active: boolean;
   featured: boolean;
   category: {
+    id: number;
     name: string;
   } | null;
 };
 
-type ProductAdminTableProps = {
-  products: ProductRow[];
+type CategoryOption = {
+  id: number;
+  name: string;
 };
 
-export function ProductAdminTable({ products }: ProductAdminTableProps) {
+type ProductAdminTableProps = {
+  products: ProductRow[];
+  categories: CategoryOption[];
+};
+
+export function ProductAdminTable({
+  products,
+  categories,
+}: ProductAdminTableProps) {
   const router = useRouter();
   const [items, setItems] = useState(products);
   const [query, setQuery] = useState("");
@@ -32,6 +43,7 @@ export function ProductAdminTable({ products }: ProductAdminTableProps) {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [savingStockId, setSavingStockId] = useState<number | null>(null);
   const [savingPromoId, setSavingPromoId] = useState<number | null>(null);
+  const [savingCategoryId, setSavingCategoryId] = useState<number | null>(null);
   const [togglingId, setTogglingId] = useState<number | null>(null);
   const [togglingFeaturedId, setTogglingFeaturedId] = useState<number | null>(
     null
@@ -108,8 +120,7 @@ export function ProductAdminTable({ products }: ProductAdminTableProps) {
   }
 
   async function handlePromoPriceChange(productId: number, value: string) {
-    const promoValue =
-      value.trim() === "" ? null : Number(value);
+    const promoValue = value.trim() === "" ? null : Number(value);
 
     if (promoValue !== null && (Number.isNaN(promoValue) || promoValue < 0)) {
       setError("El precio promocional debe ser mayor o igual a 0");
@@ -131,6 +142,38 @@ export function ProductAdminTable({ products }: ProductAdminTableProps) {
       );
     } finally {
       setSavingPromoId(null);
+    }
+  }
+
+  async function handleCategoryChange(productId: number, value: string) {
+    const nextCategoryId = value === "" ? null : Number(value);
+
+    if (nextCategoryId !== null && Number.isNaN(nextCategoryId)) {
+      setError("La categoria seleccionada no es valida");
+      return;
+    }
+
+    const selectedCategory =
+      nextCategoryId === null
+        ? null
+        : categories.find((category) => category.id === nextCategoryId) ?? null;
+
+    setSavingCategoryId(productId);
+    setError("");
+
+    try {
+      await patchProduct(productId, { categoryId: nextCategoryId });
+      updateLocalProduct(productId, {
+        categoryId: nextCategoryId,
+        category: selectedCategory,
+      });
+      router.refresh();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Ocurrio un error al actualizar categoria"
+      );
+    } finally {
+      setSavingCategoryId(null);
     }
   }
 
@@ -389,7 +432,25 @@ export function ProductAdminTable({ products }: ProductAdminTableProps) {
                     </button>
                   </td>
                   <td className="px-6 py-4">
-                    {product.category?.name || "Sin categoria"}
+                    <div className="space-y-2">
+                      <select
+                        value={product.categoryId ?? ""}
+                        onChange={(event) =>
+                          handleCategoryChange(product.id, event.target.value)
+                        }
+                        className="w-44 rounded-lg border border-slate-300 px-3 py-2 outline-none"
+                      >
+                        <option value="">Sin categoria</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                      {savingCategoryId === product.id ? (
+                        <span className="text-xs text-slate-500">Guardando...</span>
+                      ) : null}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-3">

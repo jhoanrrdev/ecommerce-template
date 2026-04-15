@@ -10,5 +10,5 @@ export type Product = {
   imageUrl?: string | null;
   active: boolean;
   featured: boolean;
-  categoryId: number;
+  categoryId: number | null;
 };

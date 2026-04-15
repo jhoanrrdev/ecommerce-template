@@ -11,14 +11,21 @@ type ProductFormData = {
   stock: string;
   sku: string;
   imageUrl: string;
+  categoryId: string;
   active: boolean;
   featured: boolean;
+};
+
+type CategoryOption = {
+  id: number;
+  name: string;
 };
 
 type ProductFormProps = {
   mode: "create" | "edit";
   productId?: number;
   initialData?: Partial<ProductFormData>;
+  categories: CategoryOption[];
   title: string;
   description: string;
   submitLabel: string;
@@ -34,6 +41,7 @@ const emptyForm: ProductFormData = {
   stock: "",
   sku: "",
   imageUrl: "",
+  categoryId: "",
   active: true,
   featured: false,
 };
@@ -42,6 +50,7 @@ export function ProductForm({
   mode,
   productId,
   initialData,
+  categories,
   title,
   description,
   submitLabel,
@@ -60,7 +69,7 @@ export function ProductForm({
   const [success, setSuccess] = useState("");
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) {
     const { name, value, type } = e.target;
 
@@ -129,6 +138,7 @@ export function ProductForm({
           stock: Number(form.stock),
           sku: form.sku || null,
           imageUrl: uploadedImageUrl || form.imageUrl || null,
+          categoryId: form.categoryId ? Number(form.categoryId) : null,
           active: form.active,
           featured: form.featured,
         }),
@@ -259,6 +269,25 @@ export function ProductForm({
               className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none"
               placeholder="SKU-001"
             />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Categoria
+            </label>
+            <select
+              name="categoryId"
+              value={form.categoryId}
+              onChange={handleChange}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none"
+            >
+              <option value="">Sin categoria</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="md:col-span-2">
