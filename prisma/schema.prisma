@@ -87,4 +87,13 @@ model Setting {
   primaryColor   String?
   secondaryColor String?
   bannerUrl      String?
+  testimonial1Name    String?
+  testimonial1Role    String?
+  testimonial1Comment String? @db.Text
+  testimonial2Name    String?
+  testimonial2Role    String?
+  testimonial2Comment String? @db.Text
+  testimonial3Name    String?
+  testimonial3Role    String?
+  testimonial3Comment String? @db.Text
 }

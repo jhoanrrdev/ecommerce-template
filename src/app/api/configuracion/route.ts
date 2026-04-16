@@ -29,7 +29,7 @@ export async function PUT(req: NextRequest) {
     });
 
     const data = {
-      storeName: String(body.storeName || "").trim(),
+      storeName: String(body.storeName || current?.storeName || "").trim(),
       logoUrl: body.logoUrl ? String(body.logoUrl).trim() : null,
       faviconUrl: body.faviconUrl ? String(body.faviconUrl).trim() : null,
       whatsapp: body.whatsapp ? String(body.whatsapp).trim() : null,
@@ -37,6 +37,21 @@ export async function PUT(req: NextRequest) {
       primaryColor: body.primaryColor ? String(body.primaryColor).trim() : null,
       secondaryColor: body.secondaryColor ? String(body.secondaryColor).trim() : null,
       bannerUrl: body.bannerUrl ? String(body.bannerUrl).trim() : null,
+      testimonial1Name: body.testimonial1Name ? String(body.testimonial1Name).trim() : null,
+      testimonial1Role: body.testimonial1Role ? String(body.testimonial1Role).trim() : null,
+      testimonial1Comment: body.testimonial1Comment
+        ? String(body.testimonial1Comment).trim()
+        : null,
+      testimonial2Name: body.testimonial2Name ? String(body.testimonial2Name).trim() : null,
+      testimonial2Role: body.testimonial2Role ? String(body.testimonial2Role).trim() : null,
+      testimonial2Comment: body.testimonial2Comment
+        ? String(body.testimonial2Comment).trim()
+        : null,
+      testimonial3Name: body.testimonial3Name ? String(body.testimonial3Name).trim() : null,
+      testimonial3Role: body.testimonial3Role ? String(body.testimonial3Role).trim() : null,
+      testimonial3Comment: body.testimonial3Comment
+        ? String(body.testimonial3Comment).trim()
+        : null,
     };
 
     if (!data.storeName) {

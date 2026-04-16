@@ -7,6 +7,7 @@ const links = [
   { href: "/admin/inventario", label: "Inventario", hint: "Stock" },
   { href: "/admin/promociones", label: "Promociones", hint: "Ventas" },
   { href: "/admin/pedidos", label: "Pedidos", hint: "Operaciones" },
+  { href: "/admin/comentarios", label: "Comentarios", hint: "Clientes" },
   { href: "/admin/configuracion", label: "Configuracion", hint: "Tienda" },
 ];
 

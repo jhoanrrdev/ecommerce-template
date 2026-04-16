@@ -85,6 +85,23 @@ export async function StorefrontContent({
 
   const newestProducts = products.slice(0, 4);
   const promoProducts = products.filter((product) => product.promoPrice).slice(0, 4);
+  const testimonials = [
+    {
+      name: settings?.testimonial1Name || "",
+      role: settings?.testimonial1Role || "",
+      comment: settings?.testimonial1Comment || "",
+    },
+    {
+      name: settings?.testimonial2Name || "",
+      role: settings?.testimonial2Role || "",
+      comment: settings?.testimonial2Comment || "",
+    },
+    {
+      name: settings?.testimonial3Name || "",
+      role: settings?.testimonial3Role || "",
+      comment: settings?.testimonial3Comment || "",
+    },
+  ].filter((testimonial) => testimonial.comment);
 
   const isHome = mode === "home";
 
@@ -421,24 +438,26 @@ export async function StorefrontContent({
               </p>
             </div>
             <div className="mt-6 grid gap-4 lg:grid-cols-3">
-              <div className="rounded-3xl bg-slate-50 p-5">
-                <p className="text-sm leading-7 text-slate-600">
-                  "La compra fue clara, la entrega rapida y el producto llego tal como se mostraba."
-                </p>
-                <p className="mt-4 text-sm font-semibold text-slate-900">Cliente ejemplo 1</p>
-              </div>
-              <div className="rounded-3xl bg-slate-50 p-5">
-                <p className="text-sm leading-7 text-slate-600">
-                  "La atencion por WhatsApp hizo muy facil resolver dudas antes de cerrar el pedido."
-                </p>
-                <p className="mt-4 text-sm font-semibold text-slate-900">Cliente ejemplo 2</p>
-              </div>
-              <div className="rounded-3xl bg-slate-50 p-5">
-                <p className="text-sm leading-7 text-slate-600">
-                  "Se nota una tienda organizada, con promociones claras y productos bien presentados."
-                </p>
-                <p className="mt-4 text-sm font-semibold text-slate-900">Cliente ejemplo 3</p>
-              </div>
+              {testimonials.length > 0 ? (
+                testimonials.map((testimonial, index) => (
+                  <div key={`${testimonial.name}-${index}`} className="rounded-3xl bg-slate-50 p-5">
+                    <p className="text-sm leading-7 text-slate-600">"{testimonial.comment}"</p>
+                    <p className="mt-4 text-sm font-semibold text-slate-900">
+                      {testimonial.name || `Cliente ${index + 1}`}
+                    </p>
+                    {testimonial.role ? (
+                      <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
+                        {testimonial.role}
+                      </p>
+                    ) : null}
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-3xl bg-slate-50 p-5 text-sm text-slate-500 lg:col-span-3">
+                  Aun no has agregado comentarios. Puedes cargarlos desde el panel en la seccion
+                  Comentarios.
+                </div>
+              )}
             </div>
           </div>
         ) : null}
