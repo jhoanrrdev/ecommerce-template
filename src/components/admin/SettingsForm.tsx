@@ -30,6 +30,7 @@ export function SettingsForm({ initialData }: { initialData: SettingsData }) {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("folder", "branding");
 
     const res = await fetch("/api/upload", {
       method: "POST",

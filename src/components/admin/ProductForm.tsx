@@ -95,6 +95,7 @@ export function ProductForm({
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
+      formData.append("folder", "products");
 
       const res = await fetch("/api/upload", {
         method: "POST",
