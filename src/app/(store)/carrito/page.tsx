@@ -17,7 +17,10 @@ export default async function CartPage() {
         </p>
       </div>
 
-      <CartPageClient whatsapp={settings?.whatsapp || ""} />
+      <CartPageClient
+        whatsapp={settings?.whatsapp || ""}
+        wompiEnabled={Boolean(settings?.wompiPublicKey && settings?.wompiIntegritySecret)}
+      />
     </section>
   );
 }

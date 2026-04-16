@@ -87,6 +87,8 @@ model Setting {
   primaryColor   String?
   secondaryColor String?
   bannerUrl      String?
+  wompiPublicKey String?
+  wompiIntegritySecret String? @db.Text
   testimonial1Name    String?
   testimonial1Role    String?
   testimonial1Comment String? @db.Text

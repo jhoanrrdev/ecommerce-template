@@ -6,7 +6,13 @@ import { useCart } from "@/components/store/CartProvider";
 import { formatCurrency } from "@/lib/utils";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
-export function CartPageClient({ whatsapp }: { whatsapp: string }) {
+export function CartPageClient({
+  whatsapp,
+  wompiEnabled,
+}: {
+  whatsapp: string;
+  wompiEnabled: boolean;
+}) {
   const { items, total, removeItem, updateQuantity, clearCart } = useCart();
   const [customer, setCustomer] = useState({
     name: "",
@@ -16,6 +22,9 @@ export function CartPageClient({ whatsapp }: { whatsapp: string }) {
     address: "",
     notes: "",
   });
+  const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | "wompi">("whatsapp");
+  const [wompiLoading, setWompiLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
 
   const message = items.length
     ? [
@@ -42,6 +51,56 @@ export function CartPageClient({ whatsapp }: { whatsapp: string }) {
   const whatsappUrl = whatsapp && items.length
     ? buildWhatsAppUrl(whatsapp, message)
     : null;
+
+  async function handleWompiCheckout() {
+    if (!checkoutReady || wompiLoading) {
+      return;
+    }
+
+    setWompiLoading(true);
+    setPaymentError("");
+
+    try {
+      const res = await fetch("/api/pagos/wompi", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customer,
+          items: items.map((item) => ({
+            id: item.id,
+            quantity: item.quantity,
+          })),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "No se pudo iniciar el pago con Wompi");
+      }
+
+      const form = document.createElement("form");
+      form.method = "GET";
+      form.action = data.checkoutUrl;
+
+      Object.entries(data.fields).forEach(([key, value]) => {
+        if (!value) return;
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = String(value);
+        form.appendChild(input);
+      });
+
+      document.body.appendChild(form);
+      form.submit();
+    } catch (err) {
+      setPaymentError(err instanceof Error ? err.message : "Error iniciando el pago");
+      setWompiLoading(false);
+    }
+  }
 
   if (items.length === 0) {
     return (
@@ -214,6 +273,37 @@ export function CartPageClient({ whatsapp }: { whatsapp: string }) {
 
         <div className="mt-6 rounded-2xl bg-white/5 p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">
+            Pago
+          </p>
+          <div className="mt-3 grid gap-3">
+            <button
+              type="button"
+              onClick={() => setPaymentMethod("whatsapp")}
+              className={`rounded-xl border px-4 py-3 text-left text-sm ${
+                paymentMethod === "whatsapp"
+                  ? "border-sky-300 bg-sky-300/10 text-white"
+                  : "border-white/10 text-slate-300"
+              }`}
+            >
+              WhatsApp / contra entrega
+            </button>
+            <button
+              type="button"
+              onClick={() => setPaymentMethod("wompi")}
+              disabled={!wompiEnabled}
+              className={`rounded-xl border px-4 py-3 text-left text-sm ${
+                paymentMethod === "wompi"
+                  ? "border-sky-300 bg-sky-300/10 text-white"
+                  : "border-white/10 text-slate-300"
+              } disabled:cursor-not-allowed disabled:opacity-50`}
+            >
+              Wompi
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-6 rounded-2xl bg-white/5 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-300">
             Cliente
           </p>
           <div className="mt-3 space-y-2 text-sm text-slate-300">
@@ -225,16 +315,37 @@ export function CartPageClient({ whatsapp }: { whatsapp: string }) {
         </div>
 
         <div className="mt-6 flex flex-col gap-3">
-          {whatsappUrl ? (
+          {paymentMethod === "whatsapp" ? (
+            whatsappUrl ? (
+              checkoutReady ? (
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl bg-white px-5 py-3 text-center text-sm font-semibold text-slate-950"
+                >
+                  Enviar pedido por WhatsApp
+                </a>
+              ) : (
+                <div className="rounded-xl bg-amber-300 px-4 py-3 text-sm font-semibold text-slate-950">
+                  Completa nombre, telefono y ciudad para continuar.
+                </div>
+              )
+            ) : (
+              <div className="rounded-xl bg-white/10 px-4 py-3 text-sm text-slate-300">
+                Configura el WhatsApp de la tienda para finalizar pedidos.
+              </div>
+            )
+          ) : wompiEnabled ? (
             checkoutReady ? (
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-xl bg-white px-5 py-3 text-center text-sm font-semibold text-slate-950"
+              <button
+                type="button"
+                onClick={handleWompiCheckout}
+                disabled={wompiLoading}
+                className="rounded-xl bg-white px-5 py-3 text-center text-sm font-semibold text-slate-950 disabled:opacity-60"
               >
-                Enviar pedido por WhatsApp
-              </a>
+                {wompiLoading ? "Redirigiendo a Wompi..." : "Pagar con Wompi"}
+              </button>
             ) : (
               <div className="rounded-xl bg-amber-300 px-4 py-3 text-sm font-semibold text-slate-950">
                 Completa nombre, telefono y ciudad para continuar.
@@ -242,9 +353,14 @@ export function CartPageClient({ whatsapp }: { whatsapp: string }) {
             )
           ) : (
             <div className="rounded-xl bg-white/10 px-4 py-3 text-sm text-slate-300">
-              Configura el WhatsApp de la tienda para finalizar pedidos.
+              Configura Wompi en el panel administrativo para habilitar este metodo de pago.
             </div>
           )}
+          {paymentError ? (
+            <div className="rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">
+              {paymentError}
+            </div>
+          ) : null}
           <button
             type="button"
             onClick={clearCart}

@@ -3,6 +3,23 @@ import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 
+function getUploadConfig() {
+  const customUploadDir = process.env.UPLOAD_DIR?.trim();
+  const customPublicBaseUrl = process.env.UPLOAD_PUBLIC_BASE_URL?.trim();
+
+  if (customUploadDir && customPublicBaseUrl) {
+    return {
+      uploadDir: customUploadDir,
+      publicBaseUrl: customPublicBaseUrl.replace(/\/+$/, ""),
+    };
+  }
+
+  return {
+    uploadDir: path.join(process.cwd(), "public", "uploads"),
+    publicBaseUrl: "/uploads",
+  };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -18,7 +35,7 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    const { uploadDir, publicBaseUrl } = getUploadConfig();
     await mkdir(uploadDir, { recursive: true });
 
     const ext = path.extname(file.name) || ".jpg";
@@ -29,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-      url: `/uploads/${fileName}`,
+      url: `${publicBaseUrl}/${fileName}`,
     });
   } catch (error) {
     console.error("Error al subir imagen:", error);

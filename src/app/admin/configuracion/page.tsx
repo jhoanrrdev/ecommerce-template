@@ -27,6 +27,8 @@ export default async function SettingsPage() {
           primaryColor: settings?.primaryColor || "",
           secondaryColor: settings?.secondaryColor || "",
           bannerUrl: settings?.bannerUrl || "",
+          wompiPublicKey: settings?.wompiPublicKey || "",
+          wompiIntegritySecret: settings?.wompiIntegritySecret || "",
         }}
       />
     </section>

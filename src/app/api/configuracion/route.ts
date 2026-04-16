@@ -37,6 +37,10 @@ export async function PUT(req: NextRequest) {
       primaryColor: body.primaryColor ? String(body.primaryColor).trim() : null,
       secondaryColor: body.secondaryColor ? String(body.secondaryColor).trim() : null,
       bannerUrl: body.bannerUrl ? String(body.bannerUrl).trim() : null,
+      wompiPublicKey: body.wompiPublicKey ? String(body.wompiPublicKey).trim() : null,
+      wompiIntegritySecret: body.wompiIntegritySecret
+        ? String(body.wompiIntegritySecret).trim()
+        : null,
       testimonial1Name: body.testimonial1Name ? String(body.testimonial1Name).trim() : null,
       testimonial1Role: body.testimonial1Role ? String(body.testimonial1Role).trim() : null,
       testimonial1Comment: body.testimonial1Comment

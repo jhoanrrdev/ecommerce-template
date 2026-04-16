@@ -11,6 +11,8 @@ type SettingsData = {
   primaryColor: string;
   secondaryColor: string;
   bannerUrl: string;
+  wompiPublicKey: string;
+  wompiIntegritySecret: string;
 };
 
 export function SettingsForm({ initialData }: { initialData: SettingsData }) {
@@ -157,6 +159,27 @@ export function SettingsForm({ initialData }: { initialData: SettingsData }) {
           />
         </div>
         <div>
+          <label className="mb-2 block text-sm font-medium text-slate-700">Wompi public key</label>
+          <input
+            value={form.wompiPublicKey}
+            onChange={(event) => setForm((current) => ({ ...current, wompiPublicKey: event.target.value }))}
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none"
+            placeholder="pub_test_..."
+          />
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium text-slate-700">Wompi integrity secret</label>
+          <input
+            type="password"
+            value={form.wompiIntegritySecret}
+            onChange={(event) =>
+              setForm((current) => ({ ...current, wompiIntegritySecret: event.target.value }))
+            }
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none"
+            placeholder="test_integrity_..."
+          />
+        </div>
+        <div>
           <label className="mb-2 block text-sm font-medium text-slate-700">Subir logo</label>
           <input
             type="file"
@@ -174,6 +197,10 @@ export function SettingsForm({ initialData }: { initialData: SettingsData }) {
             className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none"
           />
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+        Configura aqui las llaves de Wompi para habilitar pagos online desde el carrito.
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
