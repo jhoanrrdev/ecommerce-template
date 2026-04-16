@@ -1,6 +1,7 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton";
 import { prisma } from "@/lib/prisma";
+import { getPersistenceWarnings } from "@/lib/deploy-config";
 import { headers } from "next/headers";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -15,6 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       id: "asc",
     },
   });
+  const persistenceWarnings = getPersistenceWarnings();
 
   return (
     <div className="flex min-h-screen bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.12),_transparent_30%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)]">
@@ -63,6 +65,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </div>
 
           {children}
+          {persistenceWarnings.length > 0 ? (
+            <div className="rounded-3xl border border-amber-300 bg-amber-50 p-5 text-amber-950 shadow-sm">
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-amber-700">
+                Persistencia pendiente
+              </p>
+              <div className="mt-2 space-y-2 text-sm leading-6">
+                {persistenceWarnings.map((warning) => (
+                  <p key={warning}>{warning}</p>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       </main>
     </div>
