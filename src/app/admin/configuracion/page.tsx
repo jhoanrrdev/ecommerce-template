@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { SettingsForm } from "@/components/admin/SettingsForm";
+import { parseStoredWompiConfig } from "@/lib/wompi";
 
 export default async function SettingsPage() {
   const settings = await prisma.setting.findFirst({
@@ -7,6 +8,7 @@ export default async function SettingsPage() {
       id: "asc",
     },
   });
+  const wompiConfig = parseStoredWompiConfig(settings?.wompiIntegritySecret);
 
   return (
     <section className="space-y-6">
@@ -28,7 +30,8 @@ export default async function SettingsPage() {
           secondaryColor: settings?.secondaryColor || "",
           bannerUrl: settings?.bannerUrl || "",
           wompiPublicKey: settings?.wompiPublicKey || "",
-          wompiIntegritySecret: settings?.wompiIntegritySecret || "",
+          wompiEnabled: wompiConfig.enabled,
+          wompiIntegritySecret: wompiConfig.secret,
         }}
       />
     </section>

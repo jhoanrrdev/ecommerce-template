@@ -12,6 +12,7 @@ type SettingsData = {
   secondaryColor: string;
   bannerUrl: string;
   wompiPublicKey: string;
+  wompiEnabled: boolean;
   wompiIntegritySecret: string;
 };
 
@@ -169,6 +170,19 @@ export function SettingsForm({ initialData }: { initialData: SettingsData }) {
           />
         </div>
         <div>
+          <label className="mb-2 block text-sm font-medium text-slate-700">Wompi activo</label>
+          <label className="flex min-h-[52px] items-center gap-3 rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              checked={form.wompiEnabled}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, wompiEnabled: event.target.checked }))
+              }
+            />
+            Permitir pagos con Wompi en el checkout
+          </label>
+        </div>
+        <div>
           <label className="mb-2 block text-sm font-medium text-slate-700">Wompi integrity secret</label>
           <input
             type="password"
@@ -201,7 +215,7 @@ export function SettingsForm({ initialData }: { initialData: SettingsData }) {
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-        Configura aqui las llaves de Wompi para habilitar pagos online desde el carrito.
+        Configura aqui las llaves de Wompi y decide si el metodo debe estar activo en el carrito.
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

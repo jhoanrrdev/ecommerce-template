@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { CartPageClient } from "@/components/store/CartPageClient";
+import { parseStoredWompiConfig } from "@/lib/wompi";
 
 export default async function CartPage() {
   const settings = await prisma.setting.findFirst({
@@ -7,6 +8,7 @@ export default async function CartPage() {
       id: "asc",
     },
   });
+  const wompiConfig = parseStoredWompiConfig(settings?.wompiIntegritySecret);
 
   return (
     <section className="space-y-6">
@@ -19,7 +21,7 @@ export default async function CartPage() {
 
       <CartPageClient
         whatsapp={settings?.whatsapp || ""}
-        wompiEnabled={Boolean(settings?.wompiPublicKey && settings?.wompiIntegritySecret)}
+        wompiEnabled={Boolean(settings?.wompiPublicKey && wompiConfig.secret && wompiConfig.enabled)}
       />
     </section>
   );

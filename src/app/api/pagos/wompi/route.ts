@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import {
   appendWompiMetadata,
   buildWompiIntegritySignature,
+  parseStoredWompiConfig,
   wompiCheckoutUrl,
   wompiReferenceFromOrder,
 } from "@/lib/wompi";
@@ -49,9 +50,10 @@ export async function POST(req: NextRequest) {
     });
 
     const publicKey = settings?.wompiPublicKey || "";
-    const integritySecret = settings?.wompiIntegritySecret || "";
+    const wompiConfig = parseStoredWompiConfig(settings?.wompiIntegritySecret);
+    const integritySecret = wompiConfig.secret;
 
-    if (!publicKey || !integritySecret) {
+    if (!publicKey || !integritySecret || !wompiConfig.enabled) {
       return NextResponse.json(
         { error: "Wompi no esta configurado en la tienda" },
         { status: 500 }
@@ -127,6 +129,11 @@ export async function POST(req: NextRequest) {
       where: { id: order.id },
       data: {
         notes: appendWompiMetadata(baseNotes, {
+          customer_city: customerCity,
+          customer_address: customerAddress,
+          customer_notes: customerNotes,
+          payment_method: "wompi",
+          payment_channel: "checkout",
           wompi_reference: reference,
         }),
       },

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { OrdersManager } from "@/components/admin/OrdersManager";
+import { parseOrderMetadata } from "@/lib/wompi";
 
 export default async function OrdersPage() {
   const orders = await prisma.order.findMany({
@@ -7,7 +8,18 @@ export default async function OrdersPage() {
       createdAt: "desc",
     },
     include: {
-      items: true,
+      items: {
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              sku: true,
+              imageUrl: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -23,6 +35,7 @@ export default async function OrdersPage() {
       <OrdersManager
         initialOrders={orders.map((order) => ({
           id: order.id,
+          metadata: parseOrderMetadata(order.notes),
           customerName: order.customerName,
           customerPhone: order.customerPhone,
           customerEmail: order.customerEmail,
@@ -31,6 +44,15 @@ export default async function OrdersPage() {
           notes: order.notes,
           createdAt: order.createdAt.toISOString(),
           itemsCount: order.items.length,
+          items: order.items.map((item) => ({
+            id: item.id,
+            quantity: item.quantity,
+            price: item.price,
+            productId: item.productId,
+            productName: item.product.name,
+            productSku: item.product.sku,
+            productImageUrl: item.product.imageUrl,
+          })),
         }))}
       />
     </section>
