@@ -1,5 +1,3 @@
-import { createHash } from "crypto";
-
 export const WOMPI_CURRENCY = "COP";
 
 type StoredWompiConfig = {
@@ -62,6 +60,7 @@ export function buildWompiIntegritySignature(params: {
   integritySecret: string;
   expirationTime?: string;
 }) {
+  const { createHash } = require("crypto") as typeof import("crypto");
   const currency = params.currency || WOMPI_CURRENCY;
   const raw = `${params.reference}${params.amountInCents}${currency}${params.expirationTime || ""}${params.integritySecret}`;
   return createHash("sha256").update(raw).digest("hex");

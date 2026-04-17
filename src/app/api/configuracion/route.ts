@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { serializeStoredWompiConfig } from "@/lib/wompi";
+import { parseStoredWompiConfig, serializeStoredWompiConfig } from "@/lib/wompi";
 
 export async function GET() {
   try {
@@ -9,8 +9,13 @@ export async function GET() {
         id: "asc",
       },
     });
+    const wompiConfig = parseStoredWompiConfig(settings?.wompiIntegritySecret);
 
-    return NextResponse.json(settings);
+    return NextResponse.json({
+      ...settings,
+      wompiEnabled: wompiConfig.enabled,
+      wompiIntegritySecret: wompiConfig.secret,
+    });
   } catch (error) {
     console.error("Error al obtener configuracion:", error);
     return NextResponse.json(
