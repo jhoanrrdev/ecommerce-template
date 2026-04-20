@@ -4,6 +4,8 @@ import {
   appendWompiMetadata,
   buildWompiIntegritySignature,
   parseStoredWompiConfig,
+  wompiEnvironmentFromIntegritySecret,
+  wompiEnvironmentFromPublicKey,
   wompiCheckoutUrl,
   wompiReferenceFromOrder,
 } from "@/lib/wompi";
@@ -56,6 +58,23 @@ export async function POST(req: NextRequest) {
     if (!publicKey || !integritySecret || !wompiConfig.enabled) {
       return NextResponse.json(
         { error: "Wompi no esta configurado en la tienda" },
+        { status: 500 }
+      );
+    }
+
+    const publicKeyEnvironment = wompiEnvironmentFromPublicKey(publicKey);
+    const integrityEnvironment = wompiEnvironmentFromIntegritySecret(integritySecret);
+
+    if (publicKeyEnvironment !== integrityEnvironment) {
+      console.error("Wompi config invalida: ambientes mezclados", {
+        publicKeyEnvironment,
+        integrityEnvironment,
+      });
+      return NextResponse.json(
+        {
+          error:
+            "Las llaves de Wompi no coinciden entre si. Revisa que la llave publica y el secreto de integridad sean del mismo ambiente.",
+        },
         { status: 500 }
       );
     }
@@ -140,11 +159,47 @@ export async function POST(req: NextRequest) {
     });
 
     const amountInCents = Math.round(total * 100);
-    const redirectUrl = new URL("/pagos/wompi", req.url);
+    const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+    const redirectBaseUrl = configuredSiteUrl || req.url;
+    const redirectUrl = new URL("/pagos/wompi", redirectBaseUrl);
+
+    if (process.env.NODE_ENV === "production" && redirectUrl.protocol !== "https:") {
+      console.error("Wompi redirect-url invalida en produccion", {
+        redirectUrl: redirectUrl.toString(),
+      });
+      return NextResponse.json(
+        {
+          error:
+            "La URL de retorno de Wompi no esta en HTTPS. Configura NEXT_PUBLIC_SITE_URL con tu dominio publico.",
+        },
+        { status: 500 }
+      );
+    }
+
+    const requestHost = new URL(req.url).host;
+    if (configuredSiteUrl) {
+      const configuredHost = new URL(configuredSiteUrl).host;
+      if (configuredHost !== requestHost) {
+        console.warn("Wompi usando dominio configurado distinto al request actual", {
+          configuredHost,
+          requestHost,
+        });
+      }
+    }
+
     const signature = buildWompiIntegritySignature({
       reference,
       amountInCents,
       integritySecret,
+    });
+
+    console.info("Wompi checkout payload listo", {
+      environment: publicKeyEnvironment,
+      amountInCents,
+      reference,
+      redirectUrl: redirectUrl.toString(),
+      requestHost,
+      configuredSiteUrl: configuredSiteUrl || null,
     });
 
     return NextResponse.json({

@@ -53,6 +53,14 @@ export function wompiCheckoutUrl() {
   return "https://checkout.wompi.co/p/";
 }
 
+export function wompiEnvironmentFromPublicKey(publicKey: string) {
+  return publicKey.startsWith("pub_test_") ? "sandbox" : "production";
+}
+
+export function wompiEnvironmentFromIntegritySecret(secret: string) {
+  return secret.startsWith("test_integrity_") ? "sandbox" : "production";
+}
+
 export function buildWompiIntegritySignature(params: {
   reference: string;
   amountInCents: number;
